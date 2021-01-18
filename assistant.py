@@ -1,34 +1,30 @@
-# This will create a to-do list based on voice commands with functionalities
+#This will create a to-do list based on voice commands with functionalities
 
-# importing modules
+#importing modules
 import speech_recognition as sr
 import pyttsx3
 import sys
-import os.path
+import  os.path
 from os import path
 from datetime import date
 
-# function for speaking
-
-
+#function for speaking
 def speak(text):
     engine = pyttsx3.init()
-    engine.setProperty('rate', 170)
+    engine.setProperty('rate',170)
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[1].id)
+    engine.setProperty('voice',voices[1].id)
     engine.say(text)
     engine.runAndWait()
 
-# function for hearing voice
-
-
+#function for hearing voice
 def hear():
     r = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Listening")
-        voice = r.listen(source, timeout=4)
-        r.adjust_for_ambient_noise(source)
-        print("Recognizing")
+        r.adjust_for_ambient_noise(source,duration=1)
+        #voice = r.listen(source)
+        r.pause_threshold=1
+        voice = r.listen(source, timeout=6)
         try:
             txt = r.recognize_google(voice)
             return txt
@@ -42,9 +38,7 @@ def hear():
             speak("Seems you are out of network. Check your internet connectivity please")
             exit()
 
-# function for help
-
-
+#function for help
 def help():
     speak("Here are the commands in case you wanna know how this works!")
     print("Usage:-")
@@ -58,9 +52,7 @@ def help():
      report/information/info      # Statistics
      exit/quit/cancel             #terminates the program''')
 
-# add a task
-
-
+#add a task
 def add(task):
     speak(f"You have said:{task}")
     f = open("todo.txt", "a")
@@ -69,22 +61,20 @@ def add(task):
     speak(f"Added todo {task}")
     print(f"Added todo {task}\n")
 
-# done
-
-
+#done
 def done(n):
     try:
-        f = open("todo.txt", "r")
+        f = open("todo.txt","r")
         task = f.readlines()
         f.close()
         t = task[int(n)-1].rstrip("\n")
-        f = open("todo.txt", "w")
+        f = open("todo.txt","w")
         for each in task:
             if each.rstrip("\n") != t:
                 f.write(each)
         f.close()
         today = date.today()
-        d = open("done.txt", "a")
+        d = open("done.txt","a")
         d.write(today.strftime("%d-%m-%Y")+" "+t+"\n")
         d.close()
         speak(f"Congrats! You have completed:{t}")
@@ -92,70 +82,77 @@ def done(n):
     except IndexError:
         speak("This number of task doesn't exists")
 
-# list of tasks
-
-
+#list of tasks
 def list():
-    f = open("todo.txt", "r")
-    list = f.readlines()
-    f.close()
-    for count, line in enumerate(list, 1):
-        print(str(count)+". "+line.rstrip("\n"))
-    print("\n")
-# lists of completed tasks
-
-
+    try:
+        f = open("todo.txt","r")
+        list = f.readlines()
+        f.close()
+        for count,line in enumerate(list,1):
+            print(str(count)+". "+line.rstrip("\n"))
+        print("\n")
+    except Exception as e:
+        speak("Looks like your todo list empty")
+        print("Your list is empty")
+    
+#lists of completed tasks
 def list_c():
-    f = open("done.txt", "r")
-    list = f.readlines()
-    f.close()
-    for count, line in enumerate(list, 1):
-        print(str(count)+". "+line.rstrip("\n"))
-    print("\n")
-# report of tasks
-
-
+    try:
+        f = open("done.txt","r")
+        list = f.readlines()
+        f.close()
+        for count, line in enumerate(list,1):
+            print(str(count)+". "+line.rstrip("\n"))
+        print("\n")
+    except Exception as e:
+        speak("Looks like your done list empty")
+        print("Your list is empty")
+#report of tasks
 def report():
-    f = open("todo.txt", "r")
-    todo = f.readlines()
-    f.close()
-    d = open("done.txt", "r")
-    done = d.readlines()
-    d.close()
-    speak(f"Completed tasks: {len(done)}")
-    print(f"Completed tasks: {len(done)}")
-    speak(f"Pending tasks: {len(todo)}")
-    print(f"Pending tasks: {len(todo)}")
-    print("\n")
+    try:
+        f = open("todo.txt","r")
+        todo = f.readlines()
+        f.close()
+        d = open("done.txt","r")
+        done = d.readlines()
+        d.close()
+        speak(f"Completed tasks: {len(done)}")
+        print(f"Completed tasks: {len(done)}")
+        speak(f"Pending tasks: {len(todo)}")
+        print(f"Pending tasks: {len(todo)}")
+        print("\n")
+    except Exception as e:
+        speak("Looks like there's nothing in your list to report for")
+        speak("Add tasks first")
+        print("Nothing to report")
 
-# function for deleting task
-
-
+#function for deleting task
 def delete(n):
-    f = open("todo.txt", "r")
-    lines = f.readlines()
-    line = lines[int(n-1)]
-    speak(f"Deleted todo:{line}")
-    print(f"Deleted todo:{line}\n")
-    del line
-    f.close()
+    try:
+        f = open("todo.txt","r")
+        lines = f.readlines()
+        line = lines[int(n-1)]
+        speak(f"Deleted todo:{line}")
+        print(f"Deleted todo:{line}\n")
+        del line
+        f.close()
+    except Exception as e:
+        speak("Looks like your list is empty for deletion")
+        speak("Add tasks first")
+        print("Nothing to delete")
 
-# function for exit
-
-
+#function for exit
 def stop(name):
-    speak(f"Bye Bye, {name}")
+    speak(f"Bye, Bye {name}")
     exit()
-# function for recognizing commands
-
-
+#function for recognizing commands
 def rec(data):
-    if data in ["add", "do"]:
+    if "add" in data:
         speak("What do you want me to add?")
         data = hear()
         add(data)
-    elif data in ["done", "complete", "completed"]:
-        f = open("todo.txt", "r")
+    elif "done" in data or "complete" in data or"completed" in data:
+        f= open("todo.txt","r")
         lines = f.readlines()
         f.close()
         if lines != []:
@@ -170,11 +167,11 @@ def rec(data):
             done(n)
         else:
             speak("OOPS! You have nothing to complete!")
-    elif data in ["help", "use"]:
+    elif "help" in data or "use" in data:
         help()
-    elif data in ["report", "info", "information"]:
+    elif "report" in data or "info" in data or "information" in data:
         report()
-    elif data in ["delete", "remove"]:
+    elif "delete" in data or "remove" in data:
         f = open("todo.txt", "r")
         lines = f.readlines()
         f.close()
@@ -190,24 +187,23 @@ def rec(data):
             delete(n)
         else:
             speak("OOPS! You have nothing to delete!")
-    elif data in ["list", "remaining"]:
+    elif "list" in data or "remaining" in data :
         speak("Here's the list of pending todos")
         list()
         speak("Here's the list of completed todos with date of completion")
         list_c()
-    elif data in ["exit", "quit", "cancel"]:
+    elif "exit" in data or "quit" in data or "cancel" in data:
         stop(name)
     else:
         speak("I can't work over this!Sorry!")
-        # help()
+        help()
         speak("What do you want me to do?")
         data = hear()
         rec(data)
 
-
-# driver code
+#driver code
 speak("Hello! I am your assistant to remind you your daily tasks!")
-# user name
+#user name
 speak("Introduce yourself please! What is your good name?")
 txt = hear()
 words = len(txt.split())
@@ -217,14 +213,14 @@ else:
     speak("Sorry, there's too much you have speak. Enter your name here")
     name = input("Enter your name:  ")
 speak("Hello" + str(name))
-# how this works
+#how this works
 help()
-# start operations
+#start operations
 speak("What do you want me to do???")
 data = hear()
-print("date got after hearing command", data)
+print(data)
 rec(data)
-# iteration
+#iteration
 while(1):
     speak("Anything next?")
     data = hear()
